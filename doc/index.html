@@ -5,13 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CM55 Rust Bootstrap 실습 기록</title>
   <style>
-    body { max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: system-ui, sans-serif; line-height: 1.8; color: #202936; }
+    :root { color-scheme: dark; background: #111827; }
+    body { max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: system-ui, sans-serif; line-height: 1.8; color: #e5e7eb; }
     h1, h2, h3 { line-height: 1.4; }
-    pre { padding: 18px; background: #f1f4f8; border-radius: 8px; overflow-x: auto; }
+    pre { padding: 18px; background: #1e293b; border: 1px solid #475569; border-radius: 8px; overflow-x: auto; }
     code { font-family: ui-monospace, monospace; }
     table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #d4dbe4; padding: 10px; text-align: left; vertical-align: top; }
-    .status { border-left: 4px solid #bd7800; padding-left: 14px; }
+    th, td { border: 1px solid #475569; padding: 10px; text-align: left; vertical-align: top; }
+    th { background: #1e293b; }
+    a { color: #93c5fd; }
+    a:visited { color: #c4b5fd; }
+    a:focus-visible { outline: 2px solid #fbbf24; outline-offset: 3px; }
+    .status { border-left: 4px solid #fbbf24; padding-left: 14px; color: #fde68a; }
   </style>
 </head>
 <body>
@@ -286,7 +291,7 @@ Untracked files:
     </section>
     <section aria-labelledby="step4">
       <h2 id="step4">4단계 — 첫 커밋에 넣을 파일 준비</h2>
-      <p class="status">상태: 안내 완료 / 사용자 실행 결과 대기.</p>
+      <p class="status">상태: baseline 커밋 생성 확인. 이후 Git 가이드는 사용자 요청에 따라 생략한다.</p>
       <h3>직접 실행할 명령</h3>
       <pre><code>git add .gitignore doc/
 git status
@@ -304,6 +309,240 @@ git diff --cached --stat</code></pre>
         다음 단계에서 작성자 정보를 확인한 뒤 첫 커밋을 만든다.</p>
       <h3>실행 결과</h3>
       <p>사용자 실행 결과 대기.</p>
+    </section>
+    <section aria-labelledby="baseline">
+      <h2 id="baseline">실습 시작점</h2>
+      <pre><code>git log --pretty --oneline
+32cb520 (HEAD -&gt; main) baseline</code></pre>
+      <p>사용자가 제공한 출력으로 baseline 커밋을 확인했다. 이후 Git 작업은 사용자가 관리한다.</p>
+    </section>
+    <section aria-labelledby="step5">
+      <h2 id="step5">5단계 — 첫 Rust 프로그램 생성 및 PC 실행</h2>
+      <p class="status">상태: 완료 — 사용자 출력으로 PC용 빌드 및 실행 확인.</p>
+      <h3>목표</h3>
+      <p>먼저 PC에서 실행되는 작은 프로그램으로 Cargo의 생성·빌드·실행 흐름을 익힌다.
+        CM55의 벡터 테이블과 링커 설정은 이후 별도로 다룬다.</p>
+      <h3>사용자가 직접 실행할 명령</h3>
+      <pre><code>cd /root/rust_cm55
+cargo init --bin --vcs none .
+cargo run</code></pre>
+      <h3>명령과 생성 파일 설명</h3>
+      <p>프로젝트를 별도 lessons 폴더 없이 /root/rust_cm55에 직접 만든다.
+        cargo init은 기존 디렉터리에 Rust 패키지를 초기화한다.
+        마지막의 점(.)은 현재 디렉터리를 뜻한다. 기존 doc/는 유지한다.
+        --bin은 실행 프로그램을 뜻하고, --vcs none은 버전 관리 초기화를 생략한다.
+        이미 루트에 Cargo.toml이 있다면 다시 초기화하지 말고 현재 상태를 먼저 확인한다.</p>
+      <p>생성되는 Cargo.toml은 패키지 이름·버전·Rust edition과 의존성을 기술하는 빌드 설정 파일이다.
+        src/main.rs는 실행 프로그램의 진입 함수 main을 담는다.
+        Cargo.lock은 의존성 버전을 기록하며 Cargo가 관리한다.
+        target/은 프로젝트 루트의 빌드 산출물 디렉터리다.
+        앞서 작성한 /target/ 제외 규칙이 이 경로에 적용된다.</p>
+      <p>cargo run은 필요한 빌드를 수행한 뒤 결과 프로그램을 실행한다.
+        현재 디렉터리의 Cargo.toml을 사용하므로 별도 경로 옵션은 필요하지 않다.
+        별도 타깃 설정이 없다면 현재 PC용으로 빌드한다.</p>
+      <h3>현재 생성된 파일과 디렉터리</h3>
+      <pre><code>rust_cm55/
+├── Cargo.toml
+├── Cargo.lock
+├── src/
+│   └── main.rs
+├── target/
+├── doc/
+│   └── index.html
+├── .gitignore
+└── .git/</code></pre>
+      <p>도우미가 현재 파일을 읽어 확인한 구성이다. doc/, .gitignore, .git/은 이전 단계에서 준비한 항목이다.
+        IDE의 Rust 분석 도구도 Cargo를 호출할 수 있으므로 Cargo.lock이나 target/의 존재만으로 사용자의 cargo run 성공을 판단하지 않는다.</p>
+      <h3>Cargo.toml — 프로젝트 설정</h3>
+      <pre><code>[package]
+name = "rust_cm55"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]</code></pre>
+      <p>TOML 형식의 텍스트 설정 파일이며 대괄호는 설정 구역을 나눈다.
+        [package]는 패키지 정보다. name은 패키지 이름이고, 기본 실행 파일 이름도 rust_cm55가 된다.
+        version은 이 프로젝트의 버전으로 Rust 컴파일러 버전과는 별개다.
+        edition은 사용할 Rust 언어 규칙의 판이며 2024는 컴파일러 버전 번호가 아니다.
+        [dependencies]에는 사용할 외부 라이브러리를 선언하며 현재는 비어 있다.</p>
+      <p>C 개발의 Makefile/CMakeLists.txt처럼 빌드 정보를 담지만,
+        Cargo는 src/main.rs 등의 기본 배치를 알고 있어 간단한 프로그램에는 파일 목록이나 컴파일 명령을 따로 작성하지 않는다.</p>
+      <h3>Cargo.lock — 의존성 버전 고정</h3>
+      <p>Cargo가 선택한 라이브러리의 정확한 버전과 의존 관계를 자동 기록한다.
+        Cargo.toml은 원하는 의존성을 선언하고 Cargo.lock은 실제 선택 결과를 담는다.
+        현재는 외부 의존성이 없어 rust_cm55 패키지 정보만 있다. 보통 직접 수정하지 않는다.
+        이 파일의 version = 4는 잠금 파일 형식 버전이며 프로젝트나 컴파일러 버전이 아니다.</p>
+      <h3>src/main.rs — 직접 작성할 소스</h3>
+      <p>src는 소스 디렉터리이고 .rs는 Rust 소스 파일 확장자다.
+        main.rs는 현재 실행 프로그램의 소스 시작점이다. C의 main.c에 대응한다고 생각하면 된다.
+        소스 수정은 사용자가 직접 진행한다.</p>
+      <h3>target/ — 자동 생성되는 빌드 산출물</h3>
+      <p>컴파일 결과, 중간 파일, 검사 캐시 등이 들어간다.
+        일반적인 cargo run의 PC용 디버그 실행 파일은 target/debug/rust_cm55에 생성된다.
+        IDE가 만든 flycheck 관련 파일도 이 디렉터리에 있을 수 있다. 소스처럼 직접 편집할 대상은 아니다.</p>
+      <h3>기존 파일</h3>
+      <p>doc/index.html은 이 실습의 설명과 결과를 담는 문서이고,
+        .gitignore는 제외 규칙, .git/은 저장소 관리 정보다. 이번 cargo init이 새로 만든 실습 소스와 구분한다.</p>
+      <h3>cargo run은 무엇을 하는가?</h3>
+      <p>cargo run은 현재 프로젝트를 빌드한 뒤 생성한 프로그램을 실행하는 명령이다.
+        아래는 명령의 동작 설명이며 실제 실행 결과는 이 단계 끝에 기록한다.</p>
+      <ol>
+        <li>Cargo.toml을 읽어 프로젝트 설정과 의존성을 확인한다.</li>
+        <li>빌드가 필요하면 rustc를 호출해 소스를 컴파일하고 링크하여 실행 파일을 만든다.
+          이전 빌드 결과가 최신이면 필요한 작업을 생략한다.</li>
+        <li>빌드가 성공하면 생성한 실행 파일을 실행하고 프로그램의 출력을 터미널에 보여준다.</li>
+      </ol>
+      <p>현재 기본 설정에서는 PC용 개발 빌드가 되며 실행 파일 경로는 target/debug/rust_cm55다.
+        C에서 소스를 컴파일·링크한 뒤 ./프로그램으로 실행하는 과정을 한 명령으로 묶은 것과 비슷하다.</p>
+      <pre><code>cargo build   # 빌드만 수행
+cargo run     # 필요한 빌드 후 실행</code></pre>
+      <p>현재 main 함수가 실행되면 println!이 Hello, world!를 출력하고 프로그램이 종료된다.
+        현재 명령은 WSL의 Linux 프로그램을 실행한다. CM55에 다운로드하거나 보드를 부팅하는 명령이 아니다.</p>
+      <h3>현재 QEMU가 필요 없는 이유</h3>
+      <p>현재 프로젝트는 기본 설정으로 WSL의 Linux PC에서 실행할 프로그램을 만든다.
+        CM55용 명령어로 빌드하는 단계가 아니므로 이 프로그램을 실행하는 데 QEMU는 필요하지 않다.</p>
+      <p>이후 CM55용 크로스 컴파일은 실행 파일을 만드는 작업이다. 빌드만 할 때도 QEMU는 필요하지 않다.
+        CM55용 프로그램을 실행하려면 실제 하드웨어 또는 해당 하드웨어 환경을 지원하는 에뮬레이터가 필요하다.</p>
+      <p>실제 보드에 프로그램을 로드해 실행한다면 QEMU는 필수가 아니다.
+        QEMU를 선택하더라도 CPU뿐 아니라 메모리 맵과 주변장치 등의 보드 모델이 맞아야 한다.
+        커스텀 SoC를 그대로 실행할 수 있다고 가정하지 않으며, QEMU 사용 여부는 이후 실행 환경을 정할 때 결정한다.</p>
+      <h3>첫 코드 읽기</h3>
+      <pre><code>fn main() {
+    println!("Hello, world!");
+}</code></pre>
+      <p>fn은 함수를 선언한다. main은 PC 실행 프로그램의 진입 함수이며,
+        중괄호 안이 함수 본문이다. println!은 문자열을 출력하고 줄을 바꾸는 매크로다.
+        느낌표는 일반 함수 호출과 매크로 호출을 구분한다. 세미콜론은 해당 문장을 끝낸다.</p>
+      <p>이 프로그램은 기본적으로 std 표준 라이브러리와 OS의 출력 기능을 사용한다.
+        CM55 bare-metal에서는 println!의 출력 경로가 자동으로 제공되지 않는다.</p>
+      <h3>예상 결과</h3>
+      <pre><code>Hello, world!</code></pre>
+      <p>위 문구 외에 Cargo의 컴파일·실행 로그가 함께 출력될 수 있다.
+        실제 출력과 생성된 src/main.rs 내용을 공유한 뒤 다음 단계로 진행한다.</p>
+      <h3>실행 결과</h3>
+      <pre><code>cargo init --bin --vcs none .
+    Creating binary (application) package
+note: see more `Cargo.toml` keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html</code></pre>
+      <p>사용자 제공 출력으로 실행 프로그램 패키지 생성이 완료된 것을 확인했다.
+        note는 Cargo.toml 설정 항목에 관한 문서 안내이며 오류가 아니다.
+        프로젝트 생성 이후 사용자가 cargo run을 실행해 다음 결과를 제공했다.</p>
+      <pre><code>cargo run
+   Compiling rust_cm55 v0.1.0 (/root/rust_cm55)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running `target/debug/rust_cm55`
+Hello, world!</code></pre>
+      <p>Compiling은 패키지를 컴파일하는 단계다. Finished는 빌드 성공을 뜻한다.
+        dev는 개발용 빌드 설정이며 unoptimized + debuginfo는 최적화를 적용하지 않고 디버깅 정보를 포함했다는 뜻이다.
+        Running은 생성한 PC용 실행 파일을 시작했다는 안내이며 Hello, world!는 프로그램 자체의 출력이다.
+        이번 결과로 PC용 빌드·링크·실행을 확인했다. CM55용 빌드와 보드 실행은 아직 진행하지 않았다.</p>
+      <h3>질문 보충: VCS와 별도 Git 초기화</h3>
+      <p>VCS는 Version Control System, 즉 버전 관리 시스템이며 Git이 여기에 해당한다.
+        --vcs none은 Cargo의 버전 관리 초기화를 생략한다. 기존 Git 저장소를 삭제하거나 비활성화하지 않는다.</p>
+      <p>Rust 프로젝트 생성과 빌드에 Git은 필수가 아니다.
+        Git 저장소가 없는 일반적인 새 폴더에서는 cargo init --bin .으로 Rust 프로젝트와 Git 저장소를 함께 초기화할 수 있어,
+        앞선 git init을 별도로 실행하는 것은 필수가 아니었다. 이번에는 기존 Git 저장소에 Rust 프로젝트를 추가했다.</p>
+    </section>
+    <section aria-labelledby="step6">
+      <h2 id="step6">6단계 — 변수와 값 출력</h2>
+      <p class="status">상태: 완료 — 사용자 실행 결과 Count = 1 확인.</p>
+      <p>사용자가 src/main.rs를 아래 내용으로 수정하고 저장한다.</p>
+      <pre><code>fn main() {
+    let mut count: u32 = 0;
+    count += 1;
+    println!("count = {count}");
+}</code></pre>
+      <p>mut은 mutable(변경 가능한)의 약자다.</p>
+      <h3>질문 보충 — mut 없는 let과 const의 차이</h3>
+      <p>mut 없는 let은 값을 다시 대입할 수 없는 변수 바인딩이다.
+        초기값은 프로그램 실행 중에 계산해도 된다. const는 컴파일 시 평가 가능한 상수를 정의한다.</p>
+      <pre><code>fn double(value: u32) -&gt; u32 {
+    value * 2
+}
+
+fn main() {
+    let count = double(3); // 일반 함수 호출 결과를 담을 수 있음
+    const LIMIT: u32 = 10; // 컴파일 시 평가되는 상수, 타입 명시 필수
+    println!("count = {count}, limit = {LIMIT}");
+}</code></pre>
+      <p>위 코드는 설명용이며 현재 소스를 수정하라는 지시는 아니다.
+        일반 fn으로 선언된 double 호출은 const 초기값으로 사용할 수 없다.
+        컴파일 시 호출 가능한 const fn은 추후 다룬다.
+        let은 타입 추론이 가능하지만 const는 타입을 명시해야 한다.
+        const는 함수 안과 모듈 범위에 선언할 수 있으며, 위 예시의 두 값 모두 다시 대입할 수 없다.</p>
+      <p>let은 변수를 선언한다. Rust의 변수는 기본적으로 값을 다시 대입할 수 없으며,
+        mut을 붙이면 변경할 수 있다. u32는 C의 uint32_t처럼 부호 없는 32비트 정수다.
+        Rust는 이름 뒤에 콜론과 타입을 적는다. count += 1은 값을 1 증가시키며,
+        출력 문자열의 {count}는 변수의 값으로 치환된다.</p>
+      <p>프로젝트 루트에서 직접 실행한다.</p>
+      <pre><code>cargo run</code></pre>
+      <p>안내 코드의 예상 프로그램 출력은 count = 1이다. 사용자가 제공한 실제 출력은 다음과 같다.</p>
+      <pre><code>cargo run
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/rust_cm55`
+Count = 1</code></pre>
+      <p>실제 출력의 첫 글자는 대문자 C다. 값 1이 출력되었으며 실행이 확인되었다.
+        이번 명령의 출력에는 Compiling이 없으므로 Cargo는 기존 빌드 결과를 재사용했다.
+        이전 빌드가 어떤 경로로 수행되었는지는 이 출력만으로 확정하지 않는다.
+        0.00s는 Cargo의 빌드 작업 시간 표시이며 프로그램의 실행 시간을 측정한 값이 아니다.</p>
+    </section>
+    <section aria-labelledby="step7">
+      <h2 id="step7">7단계 — mut 제거 시 컴파일 검사</h2>
+      <p class="status">상태: 의도한 컴파일 실패 확인 / 소스 복구 및 재실행 대기.</p>
+      <p>목표는 변경 불가능한 변수에 다시 값을 대입하면 실행 전에 오류가 발생함을 확인하는 것이다.
+        src/main.rs에서 let mut count: u32 = 0;의 mut만 제거한다.
+        count += 1;과 나머지 코드는 유지한다.</p>
+      <pre><code>let count: u32 = 0;
+count += 1;</code></pre>
+      <p>저장한 뒤 프로젝트 루트에서 직접 실행한다.</p>
+      <pre><code>cargo check</code></pre>
+      <p>cargo check는 실행 파일을 만들고 실행하는 대신 컴파일 검사를 수행한다.
+        이번 변경은 의도적으로 오류를 만드는 실습이다.
+        count += 1은 값을 읽는 것뿐 아니라 다시 대입하는 연산이므로,
+        변경 불가능한 count에 대입할 수 없다는 진단이 예상된다.
+        실제 오류 메시지를 확인한 뒤 mut을 복구한다.</p>
+      <h3>사용자가 제공한 결과（출력 뒷부분）</h3>
+      <pre><code>  = note: consider using `_count` instead
+  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: value assigned to `count` is never read
+ --&gt; src/main.rs:3:5
+  |
+3 |     count += 1;
+  |     ^^^^^^^^^^
+  |
+  = help: maybe it is overwritten before being read?
+  = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0384`.
+warning: `rust_cm55` (bin "rust_cm55") generated 2 warnings
+error: could not compile `rust_cm55` (bin "rust_cm55") due to 1 previous error; 2 warnings emitted</code></pre>
+      <p>제공된 출력에는 주 오류 메시지의 앞부분이 없지만 E0384 참조와 실패 요약이 있다.</p>
+      <h3>확인한 소스와 원인</h3>
+      <pre><code>fn main() {
+    let count: u32 = 0;
+    count += 1;
+}</code></pre>
+      <p>현재 소스에는 mut과 println!이 없다. E0384는 변경 불가능한 변수에 재대입한 오류이며 빌드를 막는다.
+        unused_variables와 unused_assignments는 값을 출력하거나 다른 계산에 사용하지 않아 발생한 경고다.
+        _count는 의도적으로 사용하지 않는 이름을 표시하라는 제안이며 재대입 오류를 해결하는 방법은 아니다.</p>
+      <h3>사용자가 직접 복구할 소스</h3>
+      <pre><code>fn main() {
+    let mut count: u32 = 0;
+    count += 1;
+    println!("Count = {count}");
+}</code></pre>
+      <p>mut으로 재대입을 허용하고 println!으로 최종 값을 읽는다. 저장 후 cargo run을 실행한다.
+        복구 후 실행 결과는 아직 확인하지 않았다.</p>
+    </section>
+    <section aria-labelledby="session-end">
+      <h2 id="session-end">2026-11-12 실습 종료</h2>
+      <p>기본 도구 확인, 프로젝트 생성, PC용 Hello, world! 실행,
+        변경 가능한 변수와 출력, mut 제거 시 컴파일 오류 확인까지 진행했다.</p>
+      <p>종료 시 src/main.rs는 mut 제거 실험 상태이며 println!도 없는 상태다.
+        따라서 정상 빌드 가능한 완료 소스가 아니라 E0384를 재현하는 학습용 중간 상태로 저장한다.
+        사용자 요청에 따라 오늘 실습을 종료하며 추가 빌드나 소스 수정은 하지 않는다.</p>
+      <p>다음 실습은 7단계의 복구 코드를 사용자가 직접 작성하고 cargo run으로 확인하는 것부터 시작한다.
+        CM55 크로스 컴파일 및 보드 부팅 실습은 아직 시작하지 않았다.</p>
     </section>
   </main>
 </body>
