@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CM55 Rust Bootstrap 실습 기록</title>
+  <style>
+    body { max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: system-ui, sans-serif; line-height: 1.8; color: #202936; }
+    h1, h2, h3 { line-height: 1.4; }
+    pre { padding: 18px; background: #f1f4f8; border-radius: 8px; overflow-x: auto; }
+    code { font-family: ui-monospace, monospace; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #d4dbe4; padding: 10px; text-align: left; vertical-align: top; }
+    .status { border-left: 4px solid #bd7800; padding-left: 14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CM55 Rust Bootstrap 실습 기록</h1>
+    <p>실습 시작일: 2026-11-12 (Asia/Seoul)</p>
+    <p>대상: Rust 입문자, Cortex-M55 bare-metal 개발 경험자.</p>
+    <p>진행 방식: 사용자가 실습 명령을 실행하고 소스·설정 파일을 작성한다.
+      도우미는 단계별 안내와 부연설명을 제공하고 이 HTML 문서를 관리한다.
+      명령의 실제 결과를 확인한 뒤 완료 상태를 기록한다.</p>
+  </header>
+  <main>
+    <section aria-labelledby="hardware">
+      <h2 id="hardware">실습 대상 하드웨어</h2>
+      <ul>
+        <li>커스텀 Cortex-M55 SoC</li>
+        <li>SRAM 256KB</li>
+        <li>부트로더 없음, 시작 주소 0x0</li>
+      </ul>
+      <p>SRAM 주소 매핑, 디버거, 프로그램 로딩 방법, FPU·MVE 구성은 실제 보드 실행 단계에서 확인한다.</p>
+    </section>
+    <section aria-labelledby="step1">
+      <h2 id="step1">1단계 — 작업 위치와 도구 확인</h2>
+      <p class="status">상태: 도구 설치 확인 완료 — 사용자 제공 버전 출력 확인.</p>
+      <h3>목표</h3>
+      <p>작업 폴더가 맞는지 확인하고, 터미널에서 Git과 Rust 도구를 실행할 수 있는지 확인한다.
+        이 단계의 명령은 파일을 생성하거나 패키지를 설치하지 않는다.</p>
+      <h3>직접 실행할 명령</h3>
+      <p>WSL의 Bash 터미널에서 한 줄씩 실행한다. 명령 앞에 별도의 프롬프트 기호를 입력하지 않는다.</p>
+      <pre><code>cd /root/rust_cm55
+pwd
+git --version
+rustup --version
+rustc --version
+cargo --version
+cc --version</code></pre>
+      <h3>각 명령의 의미</h3>
+      <table>
+        <thead><tr><th>명령</th><th>목적과 부연설명</th></tr></thead>
+        <tbody>
+          <tr><td><code>cd /root/rust_cm55</code></td><td>이후 실습을 진행할 작업 폴더로 이동한다. 정상 실행 시 보통 출력이 없다.</td></tr>
+          <tr><td><code>pwd</code></td><td>현재 디렉터리의 절대 경로를 출력한다. <code>/root/rust_cm55</code>가 나오는지 확인한다.</td></tr>
+          <tr><td><code>git --version</code></td><td>소스 변경 이력을 관리하는 Git의 설치 여부와 버전을 확인한다. 저장소 초기화는 별도 단계에서 직접 진행한다.</td></tr>
+          <tr><td><code>rustup --version</code></td><td>Rust 툴체인 관리 도구다. 컴파일러 버전과 CM55 크로스 컴파일에 필요한 타깃 라이브러리를 설치·관리한다.</td></tr>
+          <tr><td><code>rustc --version</code></td><td>Rust 컴파일러다. C 개발에서 소스를 컴파일하는 GCC·Clang의 역할에 대응한다.</td></tr>
+          <tr><td><code>cargo --version</code></td><td>Rust 프로젝트의 빌드, 의존성 관리, 실행, 테스트를 담당한다. C 프로젝트에서 Make/CMake와 패키지 관리 도구가 맡던 역할 일부를 함께 수행한다.</td></tr>
+          <tr><td><code>cc --version</code></td><td>PC용 C 컴파일러를 확인한다. PC에서 실행할 첫 Rust 프로그램은 시스템 링커가 필요하며, Ubuntu에서는 보통 C 개발 도구와 함께 제공된다. 이 명령은 CM55용 컴파일러를 확인하는 명령이 아니다.</td></tr>
+        </tbody>
+      </table>
+      <h3>확인할 결과</h3>
+      <p><code>pwd</code>의 경로와 각 도구의 버전 출력 또는 오류 메시지를 확인한다.
+        <code>command not found</code>가 나오면 설치가 없거나, 실행 파일을 찾는 경로인 <code>PATH</code>에 등록되지 않았을 수 있다.
+        오류를 건너뛰어 설치 명령을 실행하지 말고 결과부터 공유한다.</p>
+      <h3>실행 결과</h3>
+      <p>아래는 사용자가 터미널에서 직접 실행한 뒤 제공한 결과다.</p>
+      <pre><code>git --version
+git version 2.53.0
+
+rustup --version
+rustup 1.29.3 (edbc831ce 2026-11-02)
+info: This is the version for the rustup toolchain manager, not the rustc compiler.
+info: the currently active `rustc` version is `rustc 1.99.1 (58cf8f9c3 2026-10-13)`
+
+rustc --version
+rustc 1.99.1 (58cf8f9c3 2026-10-13)
+
+cargo --version
+cargo 1.99.1 (5f94df478 2026-08-27)
+
+cc --version
+cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0
+Copyright (C) 2025 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</code></pre>
+      <p>기본 도구가 모두 실행된다. rustup의 <code>info:</code> 두 줄은 오류가 아니라
+        관리 도구 버전과 실제 컴파일러 버전이 다르다는 안내다.
+        이번 결과는 도구 실행 확인이며, PC 링크·CM55 컴파일·보드 실행 확인은 이후 단계에서 진행한다.</p>
+      <h3>다음 단계</h3>
+      <p>기본 도구 재설치는 건너뛰고 Git 저장소 초기화 단계로 진행한다.
+        아래 설치 명령은 새 환경을 준비할 때 참고한다.</p>
+    </section>
+    <section aria-labelledby="installation">
+      <h2 id="installation">참고 — 새 Ubuntu/WSL 환경의 설치 명령</h2>
+      <p class="status">참고 절차: 현재는 기본 도구가 모두 있으므로 다시 실행할 필요가 없다.
+        아래 목록은 이번 단계에서 실행한 명령이나 실행 결과를 뜻하지 않는다.</p>
+      <p>WSL의 Ubuntu Bash 터미널 기준이다. 아래 시스템 패키지 명령은 현재 환경처럼
+        <code>root</code> 계정일 때 사용한다. 일반 사용자라면 두 <code>apt-get</code> 명령 앞에
+        <code>sudo</code>를 붙인다. Rust 설치는 Rust를 사용할 사용자 계정으로 실행한다.</p>
+
+      <h3>1. 패키지 목록 갱신</h3>
+      <pre><code>apt-get update</code></pre>
+      <p>Ubuntu 저장소에서 설치 가능한 패키지와 버전의 목록을 내려받는다.
+        프로그램을 설치하거나 설치된 패키지 전체를 업그레이드하는 명령은 아니다.
+        이후 설치 명령이 최신 패키지 정보를 사용하도록 먼저 실행한다.</p>
+
+      <h3>2. Git과 PC 빌드 도구 설치</h3>
+      <pre><code>apt-get install -y --no-install-recommends git build-essential ca-certificates curl</code></pre>
+      <table>
+        <thead><tr><th>항목</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr><td><code>git</code></td><td>소스와 문서의 변경 이력을 관리한다. 설치와 저장소 초기화는 서로 다른 작업이다.</td></tr>
+          <tr><td><code>build-essential</code></td><td>GCC, C/C++ 개발 환경, Make 등의 기본 빌드 도구를 설치한다. 첫 PC용 Rust 실행 파일을 링크할 때 필요한 시스템 링커 환경도 준비한다. CM55용 크로스 컴파일러 설치와는 별개다.</td></tr>
+          <tr><td><code>ca-certificates</code></td><td>HTTPS 서버 인증서를 검증할 때 사용하는 신뢰할 수 있는 인증기관 목록을 제공한다.</td></tr>
+          <tr><td><code>curl</code></td><td>URL의 내용을 내려받는 도구다. 공식 Rust 설치 스크립트 다운로드에 사용한다.</td></tr>
+          <tr><td><code>-y</code></td><td>패키지 설치 확인 질문에 자동으로 동의한다.</td></tr>
+          <tr><td><code>--no-install-recommends</code></td><td>필수 의존성을 설치하되 권장 패키지의 자동 설치는 생략한다.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3. 공식 rustup 설치 스크립트 다운로드 및 실행</h3>
+      <pre><code>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rust-cm55-rustup-init.sh
+sh /tmp/rust-cm55-rustup-init.sh --profile minimal --default-toolchain stable --component rustfmt --component clippy</code></pre>
+      <p>첫 명령은 공식 설치 스크립트를 임시 파일로 저장한다. 두 번째 명령은 해당 스크립트를 실행한다.
+        설치 화면에서 경로와 설정을 확인한 뒤 기본 설치로 진행한다.</p>
+      <p><code>--proto '=https'</code>는 HTTPS만 허용하고, <code>--tlsv1.2</code>는 TLS 1.2 이상을 사용한다.
+        <code>-sSf</code>는 진행률 표시를 줄이면서 오류는 표시하고 HTTP 오류를 실패로 처리한다.
+        <code>-o</code>는 저장할 파일 경로를 지정한다.</p>
+      <p><code>rustup</code>은 툴체인을 관리하며 함께 설치되는 <code>rustc</code>는 컴파일러,
+        <code>cargo</code>는 프로젝트 빌드 도구다. <code>minimal</code> 프로필에
+        코드 정렬 도구 <code>rustfmt</code>와 코드 진단 도구 <code>clippy</code>를 추가한다.
+        <code>stable</code>은 설치 시점의 안정 버전을 뜻하므로 설치 날짜에 따라 버전이 달라질 수 있다.</p>
+
+      <h3>4. 현재 터미널의 PATH 반영</h3>
+      <pre><code>source "$HOME/.cargo/env"</code></pre>
+      <p>설치된 Rust 도구를 현재 Bash에서 찾도록 환경 설정을 읽는다.
+        <code>PATH</code>는 터미널이 실행 파일을 찾는 디렉터리 목록이다.
+        <code>$HOME</code>은 현재 사용자의 홈 디렉터리이며, root에서는 보통 <code>/root</code>다.</p>
+
+      <h3>5. 설치 확인</h3>
+      <pre><code>git --version
+rustup --version
+rustc --version
+cargo --version
+cc --version
+cargo fmt --version
+cargo clippy --version</code></pre>
+      <p>각 명령이 버전을 출력하는지 확인한다. <code>command not found</code>라면 설치 및 PATH를 확인한다.
+        위 버전 확인만으로 CM55용 코드의 컴파일이나 보드 실행까지 검증되는 것은 아니다.</p>
+
+      <h3>6. CM55 크로스 컴파일 타깃 설치（해당 실습에서 확인 예정）</h3>
+      <pre><code>rustup target add thumbv8m.main-none-eabi
+rustup target list --installed</code></pre>
+      <p>첫 명령은 해당 bare-metal 타깃의 Rust 라이브러리를 설치하고, 두 번째 명령은 설치된 타깃을 보여준다.
+        <code>thumbv8m.main-none-eabi</code>는 초기 실습에서 사용할 soft-float ABI 타깃 후보다.
+        실제 CM55 코드 생성에는 CPU 및 FPU·MVE 설정도 따로 확인해야 한다.
+        이 명령으로 startup 코드, 벡터 테이블, 메모리 맵 또는 디버거가 준비되지는 않는다.</p>
+      <p>현재 사용자 확인은 기본 도구의 존재에 대한 확인이다. 이 타깃의 설치 여부는 해당 단계에서 별도로 확인한다.</p>
+
+      <h3>공식 참고 문서</h3>
+      <ul>
+        <li><a href="https://doc.rust-lang.org/book/ch01-01-installation.html">Rust Book — 설치와 PC 링커 준비</a></li>
+        <li><a href="https://rust-lang.org/tools/install/">Rust 공식 설치 안내</a></li>
+        <li><a href="https://doc.rust-lang.org/rustc/platform-support/thumbv8m.main-none-eabi.html">rustc Book — Arm bare-metal 타깃과 Cortex-M55 구성</a></li>
+      </ul>
+    </section>
+    <section aria-labelledby="step2">
+      <h2 id="step2">2단계 — Git 저장소 초기화</h2>
+      <p class="status">상태: 완료 — 사용자 제공 초기화 및 상태 출력 확인.</p>
+      <h3>목표</h3>
+      <p>현재 실습 폴더를 Git이 변경 이력을 관리할 수 있는 로컬 저장소로 만든다.
+        Git 설치만으로 특정 폴더의 변경 이력이 자동 관리되지는 않는다.</p>
+      <h3>직접 실행할 명령</h3>
+      <pre><code>cd /root/rust_cm55
+git init -b main
+git status</code></pre>
+      <h3>각 명령의 의미</h3>
+      <p><code>git init</code>은 현재 폴더에 Git 관리 정보를 담는 <code>.git</code>을 준비한다.
+        <code>-b main</code>은 최초 브랜치 이름을 <code>main</code>으로 지정한다.
+        브랜치는 작업 이력의 흐름에 붙인 이름이며, 첫 실습에서는 main 하나로 진행한다.</p>
+      <p><code>git status</code>는 현재 브랜치와 파일의 추적 상태를 보여준다.
+        <code>Untracked files</code>는 파일이 존재하지만 아직 Git의 관리 대상으로 등록하지 않았다는 뜻이다.
+        문서가 있으므로 <code>doc/</code>가 여기에 표시될 수 있다.</p>
+      <h3>예상 결과</h3>
+      <pre><code>On branch main
+
+No commits yet
+
+Untracked files:
+  ...
+  doc/</code></pre>
+      <p>위 내용은 예상 예시이며 실제 출력은 경로와 파일 상태에 따라 달라질 수 있다.
+        <code>No commits yet</code>은 아직 저장한 이력 단위인 커밋이 없다는 정상 안내다.
+        이 단계는 로컬 저장소만 만들며 GitHub 계정이나 원격 저장소가 필요하지 않다.</p>
+      <h3>실행 결과</h3>
+      <pre><code>git init -b main
+Initialized empty Git repository in /root/rust_cm55/.git/
+
+git status
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add &lt;file&gt;..." to include in what will be committed)
+        doc/
+        target/</code></pre>
+      <p>main 브랜치의 빈 저장소가 정상 생성되었다. 아직 커밋은 없다.
+        doc/와 target/은 모두 미추적 상태다. 문서는 이력에 포함하고 빌드 산출물은 제외하도록 다음 단계에서 설정한다.</p>
+    </section>
+    <section aria-labelledby="step3">
+      <h2 id="step3">3단계 — 빌드 산출물을 Git 관리에서 제외</h2>
+      <p class="status">상태: 완료 — 사용자 git status 출력에서 target/ 제외 확인.</p>
+      <h3>목표와 배경</h3>
+      <p>target/은 Cargo가 사용하는 빌드 산출물 디렉터리다.
+        C 개발의 오브젝트 파일과 실행 파일을 두는 build/와 비슷하다.
+        IDE의 Rust 검사 도구가 실행되면서 생성될 수도 있으며,
+        target/이 존재한다는 사실만으로 실습 빌드가 성공했다고 판단하지 않는다.</p>
+      <p>재생성할 수 있는 빌드 산출물을 커밋하면 불필요하게 이력이 커진다.
+        .gitignore 파일에 제외 규칙을 작성한다. 파일 자체를 삭제할 필요는 없다.</p>
+      <h3>사용자가 작성할 파일</h3>
+      <p>프로젝트 최상위 /root/rust_cm55에 <code>.gitignore</code>라는 파일을 만들고 다음 한 줄을 입력한 뒤 저장한다.
+        파일 이름 맨 앞의 점도 포함한다.</p>
+      <pre><code>/target/</code></pre>
+      <p>맨 앞의 /는 이 .gitignore가 있는 프로젝트 루트를 기준으로 한다.
+        맨 뒤의 /는 디렉터리를 뜻한다. 따라서 프로젝트 루트의 target 디렉터리 전체를 무시한다.
+        .gitignore 자체와 doc/는 이후 커밋에 포함할 수 있다.</p>
+      <h3>직접 실행할 확인 명령</h3>
+      <pre><code>git status
+git check-ignore -v target/</code></pre>
+      <p>git status의 미추적 목록에서 target/이 사라지고 .gitignore와 doc/가 보이는지 확인한다.
+        git check-ignore -v는 해당 경로를 무시하게 만든 파일, 규칙의 줄 번호, 규칙을 출력한다.</p>
+      <h3>예상 결과</h3>
+      <pre><code>git check-ignore -v target/
+.gitignore:1:/target/ target/</code></pre>
+      <p>위 예시의 항목 사이 공백은 터미널에서 탭으로 표시될 수 있다.
+        .gitignore는 아직 추적하지 않는 파일에 적용된다.
+        이번 target/은 앞 단계에서 미추적 상태임을 확인했으므로 이 규칙으로 제외할 수 있다.</p>
+      <h3>실행 결과</h3>
+      <pre><code>git check-ignore -v target/
+（출력 없음）
+
+git status
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add &lt;file&gt;..." to include in what will be committed)
+        doc/
+        target/</code></pre>
+      <p>target/이 여전히 미추적 목록에 있으므로 제외되지 않았다.
+        이 경우 git check-ignore -v의 출력이 없는 것은 해당 경로에 적용되는 제외 규칙이 없다는 의미다.</p>
+      <h3>원인 확인과 보완 절차</h3>
+      <p>도우미가 작업 위치와 파일 존재 여부를 읽기 전용으로 확인했다.</p>
+      <pre><code>pwd
+/root/rust_cm55
+
+ls -la .gitignore
+ls: cannot access '.gitignore': No such file or directory</code></pre>
+      <p>프로젝트 루트에 저장된 .gitignore 파일이 없다.
+        아래 명령을 사용자가 직접 실행해 파일을 만든 뒤 다시 확인한다.</p>
+      <pre><code>cd /root/rust_cm55
+printf '/target/\n' &gt; .gitignore
+cat .gitignore
+git check-ignore -v target/
+git status</code></pre>
+      <p>printf는 지정한 문자열을 출력하며 \n은 줄바꿈이다.
+        &gt;는 출력을 화면 대신 파일에 기록하는 Bash 리다이렉션이다.
+        파일이 없으면 생성하고 있으면 내용을 덮어쓴다. 이번에는 파일이 없음을 확인한 상태에서 사용한다.
+        cat은 저장된 내용을 화면에 표시한다.</p>
+      <h3>보완 후 실행 결과</h3>
+      <pre><code>git status
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add &lt;file&gt;..." to include in what will be committed)
+        .gitignore
+        doc/</code></pre>
+      <p>target/이 목록에서 사라지고 .gitignore와 doc/만 표시된다. 빌드 산출물 제외 설정을 마쳤다.</p>
+    </section>
+    <section aria-labelledby="step4">
+      <h2 id="step4">4단계 — 첫 커밋에 넣을 파일 준비</h2>
+      <p class="status">상태: 안내 완료 / 사용자 실행 결과 대기.</p>
+      <h3>직접 실행할 명령</h3>
+      <pre><code>git add .gitignore doc/
+git status
+git diff --cached --stat</code></pre>
+      <h3>목적과 부연설명</h3>
+      <p>Git의 기본 흐름은 작업 파일 수정 → git add로 준비 → git commit으로 이력 저장이다.
+        준비 영역을 스테이징 영역이라고 한다. git add는 실행 시점의 파일 내용을 이 영역에 올린다.
+        이후 파일을 수정하면 그 수정분은 다시 git add해야 다음 커밋에 포함된다.</p>
+      <p>이번에는 .gitignore와 doc/만 명시해 추가한다.
+        git status에서 Changes to be committed 아래에 파일이 나타나면 준비된 상태다.
+        git diff --cached --stat은 준비된 변경의 파일별 추가·삭제 줄 수를 요약한다.
+        아직 커밋을 생성하거나 원격 서버로 전송하지 않는다.</p>
+      <h3>확인할 결과</h3>
+      <p>.gitignore와 doc/index.html이 준비 목록에 있고 target/은 없는지 확인한다.
+        다음 단계에서 작성자 정보를 확인한 뒤 첫 커밋을 만든다.</p>
+      <h3>실행 결과</h3>
+      <p>사용자 실행 결과 대기.</p>
+    </section>
+  </main>
+</body>
+</html>
