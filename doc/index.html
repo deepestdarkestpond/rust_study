@@ -832,6 +832,53 @@ fn main() {
         0으로 초기화하는 동작과 % 10으로 나머지를 구하는 동작은 다르다. 예를 들어 11 % 10은 1이다.</p>
       <p>소스 검토 기록이며 이번 검토에서 프로그램을 대신 실행하거나 사용자 소스를 수정하지 않았다.</p>
     </section>
+    <section aria-labelledby="step11">
+      <h2 id="step11">11단계 — while 반복과 복수 조건 검사</h2>
+      <p class="status">상태: 사용자 작성 소스 및 제공한 출력 뒷부분 확인 완료.</p>
+      <p>사용자가 증가 연산 위에 while 반복을 추가하자고 제안했다.
+        도우미는 while count &lt;= 10 예제와, 반복 안에서 count를 0으로 초기화하면 반복이 끝나지 않음을 설명했다.
+        이후 사용자가 작성한 실제 소스는 다음과 같다.</p>
+      <pre><code>use std::println as print_line;
+fn main() {
+    let mut count: u8 = 0;
+
+    while count &lt; 15 {
+        count += 1;
+        if count % 3 == 0 {
+            print_line!("Count is a multiple of 3: {}", count);
+        }
+        if count &gt; 10 {
+            print_line!("Count exceeded 10!");
+        }
+
+        let status = if count &gt; 0 { "active" } else { "idle" };
+        print_line!("Count: {}, Status: {}", count, status);
+    }
+}</code></pre>
+      <h3>사용자가 제공한 실행 결과（뒷부분）</h3>
+      <pre><code>Count: 10, Status: active
+Count exceeded 10!
+Count: 11, Status: active
+Count is a multiple of 3: 12
+Count exceeded 10!
+Count: 12, Status: active
+Count exceeded 10!
+Count: 13, Status: active
+Count exceeded 10!
+Count: 14, Status: active
+Count is a multiple of 3: 15
+Count exceeded 10!
+Count: 15, Status: active</code></pre>
+      <p>처음에는 사용자가 Count: 16, Status: active를 공유했으나 이후 위와 같이 15로 끝나는 출력을 제공했다.
+        현재 소스와 일치하는 것은 위 출력이다.</p>
+      <p>while은 본문에 들어가기 전에 조건을 검사한다. count가 14일 때 조건을 만족하여 본문에 들어가고,
+        15로 증가한 뒤 출력한다. 다음 검사에서 15 &lt; 15가 거짓이므로 종료한다.
+        이 소스에서는 Count: 16이 출력되지 않는다.</p>
+      <p>count % 3 == 0은 3의 배수를 검사한다. 두 if는 독립적이므로,
+        12와 15에서는 3의 배수라는 메시지와 10을 넘었다는 메시지가 모두 출력된다.
+        조건을 만족할 때마다 실행하므로 10 초과 메시지는 11부터 15까지 매번 출력된다.
+        status를 계산하는 시점에는 count가 항상 양수이므로 모두 active가 된다.</p>
+    </section>
   </main>
 </body>
 </html>
