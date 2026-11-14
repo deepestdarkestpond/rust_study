@@ -782,6 +782,30 @@ fn main() {
         사용자 코드의 Status는 대문자 S이므로 예상 출력은 Count: 1, Status: active다.
         이는 소스를 바탕으로 예상한 출력이며 사용자의 터미널 출력을 직접 확인한 기록은 아니다.</p>
     </section>
+    <section aria-labelledby="if-block-actions">
+      <h2 id="if-block-actions">질문 보충 — if 블록 안에서 작업하기</h2>
+      <p>앞선 let status = if ... 형태는 C의 조건 연산자처럼 값을 선택하는 예제였다.
+        Rust에서도 C처럼 if 블록 안에서 출력, 함수 호출, 변수 변경 등의 작업을 수행할 수 있다.</p>
+      <pre><code>if count &gt; 0 {
+    print_line!("active");
+    print_line!("Count: {count}");
+} else {
+    print_line!("idle");
+}</code></pre>
+      <p>조건이 참이면 첫 블록을, 거짓이면 else 블록을 실행한다. 블록 안에는 여러 문장을 작성할 수 있으며,
+        위 호출 뒤의 세미콜론은 각 문장을 끝낸다. 이 형태의 if 전체 뒤에는 세미콜론이 필요하지 않다.
+        거짓일 때 수행할 작업이 없으면 else를 생략할 수도 있다.</p>
+      <p>바깥 변수에 대입하는 형태도 가능하다. 이때 변수는 mut으로 선언되어 있어야 한다.</p>
+      <pre><code>let mut status = "idle";
+if count &gt; 0 {
+    status = "active";
+}
+print_line!("Status: {status}");</code></pre>
+      <p>차이는 if가 만든 값을 let으로 받는지, 블록 안에서 필요한 작업을 수행하는지에 있다.
+        Rust의 if는 표현식이며, 위와 같이 결과 값을 사용하지 않는 형태로도 쓸 수 있다.
+        조건에는 bool이 필요하므로 C의 if (count) 대신 if count != 0처럼 작성한다.</p>
+      <p>위 코드는 설명용이다. 사용자 소스는 변경하지 않았고 해당 예제의 실행 결과도 확인하지 않았다.</p>
+    </section>
   </main>
 </body>
 </html>
