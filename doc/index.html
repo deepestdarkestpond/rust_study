@@ -1093,6 +1093,29 @@ print_line!("{b}"); // 가능
         모든 배열이 복사되는 것은 아니며 원소 타입에 따라 달라진다.</p>
       <p class="status">상태: 질문 설명 기록 — 사용자 소스 수정 및 예제 실행은 하지 않음.</p>
     </section>
+    <section aria-labelledby="ownership-clone">
+      <h2 id="ownership-clone">질문 보충 — 이동 대신 실제로 복사하려면?</h2>
+      <p>String처럼 대입 시 이동하는 값을 별도의 소유 값으로 복제하려면 clone()을 사용한다.</p>
+      <pre><code>let a = String::from("hello");
+let b = a.clone();
+
+print_line!("a: {a}, b: {b}"); // 둘 다 사용 가능</code></pre>
+      <p>String의 clone은 별도의 문자열 저장 공간을 마련하고 내용을 복사한다.
+        a와 b는 각각 자신의 문자열을 소유하므로 한쪽을 변경해도 다른 쪽의 문자열은 바뀌지 않는다.</p>
+      <pre><code>let a = String::from("hello");
+let mut b = a.clone();
+b.push_str("!"); // b의 끝에 문자열을 추가
+
+print_line!("a: {a}"); // a: hello
+print_line!("b: {b}"); // b: hello!</code></pre>
+      <p>String에서는 let b = a;가 이동, let b = a.clone();이 별도 문자열 복제,
+        let b = &amp;a;가 원본을 가리키는 참조 생성이다. 참조는 문자열 내용의 복제가 아니며 자세한 규칙은 이후에 다룬다.
+        u8 같은 Copy 타입은 일반 대입만으로 복사되므로 clone을 쓸 필요가 없다.</p>
+      <p>clone은 Clone 트레이트가 제공한다. 복제 방식과 비용은 타입의 구현에 따라 달라지므로,
+        모든 타입에서 clone이 내부 데이터 전체를 독립적으로 복사한다고 가정하면 안 된다.
+        위 String 예제는 내용을 복사하며 메모리 할당과 복사 비용이 발생할 수 있다.</p>
+      <p class="status">상태: 질문 설명과 예상 출력 기록 — 사용자 소스 수정 및 예제 실행은 하지 않음.</p>
+    </section>
     <section aria-labelledby="string-from">
       <h2 id="string-from">질문 보충 — String::from의 from은 무엇인가?</h2>
       <p>from은 다른 값으로부터 해당 타입의 값을 만드는 연관 함수다. From 트레이트가 제공하는 변환 인터페이스이며,
