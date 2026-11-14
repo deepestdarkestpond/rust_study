@@ -1201,6 +1201,29 @@ println!("{value}"); // 20</code></pre>
         p, q, r은 같은 메모리를 가리키며 포인터 대입은 원본 데이터 복제가 아니다.
         원시 포인터의 역참조에는 unsafe가 필요하고 주소의 유효성, 정렬, 접근 규칙을 코드 작성자가 보장해야 한다.
         원시 포인터 자체는 메모리를 자동으로 해제하지 않는다.</p>
+      <h3 id="raw-mut-syntax">질문 보충 — &amp;raw mut은 무엇인가?</h3>
+      <p>&amp;raw mut value는 value를 가리키는 쓰기 가능한 원시 포인터를 만드는 표현식이다.
+        C의 uint32_t *p = &amp;value;와 비교할 수 있다.</p>
+      <pre><code>let mut value: u32 = 10;
+let p: *mut u32 = &amp;raw mut value;</code></pre>
+      <p>왼쪽의 *mut u32는 타입이고, 오른쪽의 &amp;raw mut value는 포인터를 만드는 표현식이다.
+        raw는 원시 포인터를 만들겠다는 의미이며 mut은 쓰기 가능한 포인터 종류를 선택한다.
+        메모리 할당이나 소유권 이동을 뜻하지 않는다.</p>
+      <pre><code>let mut value: u32 = 10;
+let reference: &amp;mut u32 = &amp;mut value; // 가변 참조
+*reference = 20;
+
+let pointer: *mut u32 = &amp;raw mut value; // 원시 포인터
+unsafe {
+    *pointer = 30;
+}</code></pre>
+      <p>&amp;mut value는 Rust의 빌림 규칙을 따르는 참조를 만든다.
+        &amp;raw mut value는 중간에 가변 참조를 만들지 않고 원시 포인터를 만든다.
+        이 원시 포인터는 Copy이며, 그 자체로 소유권이나 자동 해제 책임을 갖지 않는다.</p>
+      <p>원시 포인터를 만드는 작업 자체는 이 예제에서 unsafe가 필요하지 않지만,
+        역참조하여 읽거나 쓸 때는 unsafe가 필요하다. unsafe가 주소의 유효성이나 별칭 규칙 위반을 허용하는 것은 아니다.
+        예제에서는 지역 변수의 수명이 유지되고, 앞선 참조의 사용이 끝난 뒤 원시 포인터로 접근한다.</p>
+      <p>읽기용 원시 포인터를 만드는 대응 문법은 &amp;raw const value이며 결과 타입은 *const T다.</p>
       <h3>Box — 힙 할당과 소유권 관리</h3>
       <pre><code>let p: Box&lt;u32&gt; = Box::new(10);
 let q = p; // 소유권 이동: p는 이후 사용 불가
