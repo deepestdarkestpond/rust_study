@@ -1192,6 +1192,82 @@ println!("{}, {}", *q, *r); // 10, 10</code></pre>
         *mut의 mut은 가리키는 메모리에 쓰는 포인터 종류를 나타낸다. 서로 다른 역할이다.</p>
       <p class="status">상태: 질문 설명과 예상 출력 기록 — 사용자 소스 수정 및 예제 실행은 하지 않음.</p>
     </section>
+    <section aria-labelledby="pointer-example-run">
+      <h2 id="pointer-example-run">포인터 비교 — 직접 작성한 실행 예제</h2>
+      <p class="status">상태: 사용자 요청으로 도우미가 src/main.rs 작성 및 cargo run 실행 완료 — 빌드와 출력 확인.</p>
+      <p>이번에는 사용자가 예제 작성을 요청하여 도우미가 소스를 작성했다.
+        공유 참조 복사, 가변 참조 이동, 원시 포인터 복사, Box 이동과 복제를 한 프로그램에서 비교한다.</p>
+      <pre><code>use std::println as print_line;
+
+fn main() {
+    // 1. 공유 참조: 주소가 복사되고 같은 값을 가리킨다.
+    print_line!(&quot;[1] Shared reference: copy&quot;);
+    let value: u32 = 10;
+    let p: &amp;u32 = &amp;value;
+    let q = p;
+    print_line!(&quot;*p = {}, *q = {}&quot;, *p, *q);
+    print_line!(&quot;Same target: {}&quot;, std::ptr::eq(p, q));
+
+    // 2. 가변 참조: 이 대입에서는 p가 q로 이동한다.
+    print_line!(&quot;\n[2] Mutable reference: move&quot;);
+    let mut value: u32 = 10;
+    let p: &amp;mut u32 = &amp;mut value;
+    let q = p;
+    *q = 20;
+    // *p = 30; // 주석을 해제하면 이동한 p를 사용해서 컴파일 오류가 난다.
+    print_line!(&quot;value = {value}&quot;);
+
+    // 3. 원시 포인터: 주소 복사 후에도 p와 q를 모두 사용할 수 있다.
+    print_line!(&quot;\n[3] Raw pointer: copy&quot;);
+    let mut value: u32 = 10;
+    let p: *mut u32 = &amp;raw mut value;
+    let q = p;
+    // SAFETY: p와 q는 살아 있는 지역 변수 value를 가리킨다.
+    // 정렬과 초기화가 올바르며, 두 쓰기는 같은 스레드에서 순서대로 수행한다.
+    // 이 접근과 충돌하는 참조는 없다.
+    unsafe {
+        *q = 20;
+        *p += 1;
+    }
+    print_line!(&quot;Same target: {}&quot;, std::ptr::eq(p, q));
+    print_line!(&quot;value = {value}&quot;);
+
+    // 4. Box: 대입은 소유권 이동, clone은 별도 할당과 값 복제다.
+    print_line!(&quot;\n[4] Box: move and clone&quot;);
+    let p: Box&lt;u32&gt; = Box::new(10);
+    let mut q = p;
+    // print_line!(&quot;{}&quot;, *p); // 주석을 해제하면 이동한 p를 사용해서 오류가 난다.
+    let mut r = q.clone();
+    *q = 20;
+    *r = 30;
+    print_line!(&quot;*q = {}, *r = {}&quot;, *q, *r);
+    print_line!(&quot;Same target: {}&quot;, std::ptr::eq(&amp;*q, &amp;*r));
+    // q와 r은 각각 자신의 힙 메모리를 자동으로 해제한다.
+}
+</code></pre>
+      <h3>도우미가 실행한 cargo run의 실제 프로그램 출력</h3>
+      <pre><code>[1] Shared reference: copy
+*p = 10, *q = 10
+Same target: true
+
+[2] Mutable reference: move
+value = 20
+
+[3] Raw pointer: copy
+Same target: true
+value = 21
+
+[4] Box: move and clone
+*q = 20, *r = 30
+Same target: false</code></pre>
+      <p>std::ptr::eq는 두 포인터가 같은 주소를 가리키는지 비교한다. 앞선 두 Copy 예제에서는 true이고,
+        별도 할당을 소유하는 Box 예제에서는 false다. 이 비교는 포인터가 가리키는 값의 내용 비교가 아니다.</p>
+      <p>이동 후 사용 오류를 보여주는 줄은 주석으로 남겼다. 기본 예제는 정상 빌드되고,
+        해당 줄을 주석 해제하면 이동한 변수를 다시 사용할 수 없다는 오류를 확인할 수 있다.
+        오류 줄의 주석 해제 실험은 이번 실행에서 수행하지 않았다.</p>
+      <p>지역 변수 value가 각 예제에서 다시 등장하는 것은 새 let 선언이 앞선 이름을 가리는 섀도잉이다.
+        같은 변수를 계속 재대입하는 것과는 구분하며 자세한 내용은 별도 과정에서 다룬다.</p>
+    </section>
     <section aria-labelledby="ownership-clone">
       <h2 id="ownership-clone">질문 보충 — 이동 대신 실제로 복사하려면?</h2>
       <p>String처럼 대입 시 이동하는 값을 별도의 소유 값으로 복제하려면 clone()을 사용한다.</p>
