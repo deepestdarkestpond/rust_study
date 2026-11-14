@@ -27,6 +27,8 @@
     <p>진행 방식: 사용자가 실습 명령을 실행하고 소스·설정 파일을 작성한다.
       도우미는 단계별 안내와 부연설명을 제공하고 이 HTML 문서를 관리한다.
       명령의 실제 결과를 확인한 뒤 완료 상태를 기록한다.</p>
+    <p>기록 원칙: 사용자의 모든 학습 질문과 답변을 별도 요청 없이 설명과 함께 기록한다.
+      새 내용은 관련 학습 항목 안이나 바로 뒤에 배치하고, 예제의 예상 결과와 실제 확인한 실행 결과를 구분한다.</p>
   </header>
   <main>
     <section aria-labelledby="project-goal">
@@ -1070,6 +1072,44 @@ print_line!("{}", values[0]); // 오류: 초기화 전에 사용</code></pre>
       <p>[]는 원소가 없는 길이 0의 배열이다. 길이 4인 배열의 초기값을 생략한다는 의미가 아니다.
         필요하면 let empty: [u8; 0] = [];처럼 원소 타입을 명시할 수 있다.</p>
       <p class="status">상태: 사용자 요청으로 설명 기록 — 위 예제의 실행 결과는 확인하지 않았으며 소스는 수정하지 않음.</p>
+    </section>
+    <section aria-labelledby="ownership-move">
+      <h2 id="ownership-move">질문 보충 — 변수의 이동과 복사</h2>
+      <p>사용자가 Rust의 변수 이동 개념을 질문했다. 소유권 이동(move)은 값을 소유하고 관리할 책임이
+        다른 바인딩으로 넘어가는 것이다. 대입할 때 복사되는지 이동하는지는 타입에 따라 결정된다.</p>
+      <pre><code>let a: u8 = 42;
+let b = a;
+print_line!("a: {a}, b: {b}"); // 둘 다 사용 가능</code></pre>
+      <p>u8, u32, bool처럼 Copy를 구현하는 타입은 대입 시 복사되어 원래 변수도 계속 사용할 수 있다.</p>
+      <pre><code>let a = String::from("hello");
+let b = a; // 소유권이 b로 이동
+
+print_line!("{b}"); // 가능
+// print_line!("{a}"); // 오류: 이동 후 a를 사용할 수 없음</code></pre>
+      <p>String은 문자열을 저장하는 힙 메모리를 소유하고 관리하며, 소유한 값이 정리될 때 메모리를 해제한다.
+        이동 규칙은 같은 메모리를 두 소유자가 각각 해제하는 문제를 방지한다.
+        이동은 문자열 내용 전체를 새 메모리로 복사한다는 뜻이 아니다.</p>
+      <p>[u8; 4]는 원소가 Copy 타입이므로 배열 전체도 Copy다. 따라서 정수 배열을 대입하면 복사된다.
+        모든 배열이 복사되는 것은 아니며 원소 타입에 따라 달라진다.</p>
+      <p class="status">상태: 질문 설명 기록 — 사용자 소스 수정 및 예제 실행은 하지 않음.</p>
+    </section>
+    <section aria-labelledby="string-from">
+      <h2 id="string-from">질문 보충 — String::from의 from은 무엇인가?</h2>
+      <p>from은 다른 값으로부터 해당 타입의 값을 만드는 연관 함수다. From 트레이트가 제공하는 변환 인터페이스이며,
+        트레이트의 자세한 문법은 이후 과정에서 다룬다.</p>
+      <pre><code>let a = String::from("hello");</code></pre>
+      <p>여기서 문자열 리터럴 "hello"의 타입은 &amp;str이고, String은 문자열 데이터를 소유하는 타입이다.
+        이 변환은 문자열 내용을 힙 메모리에 복사하여 String을 만든다.
+        ::는 타입과 함수 등의 경로를 구분한다. 이 호출은 기존 객체의 메서드를 호출하는 a.from(...) 형태가 아니다.</p>
+      <p>from은 문자열 전용이 아니며 정수의 손실 없는 변환에도 사용할 수 있다.</p>
+      <pre><code>let small: u8 = 42;
+let large = u32::from(small); // u8에서 u32로 손실 없이 변환
+
+// u8::from(300u32); // 오류: u32에서 u8로의 From 구현이 없음</code></pre>
+      <p>정수 타입 자체의 범위가 줄어들어 값이 손실될 수 있는 방향은 From으로 제공하지 않는다.
+        범위 검사가 필요한 정수 변환은 앞선 타입 캐스팅 설명의 try_from을 사용한다.
+        String 예제는 소유권 설명을 위한 PC용 예제이며 힙이 없는 CM55 환경에 바로 적용한 코드는 아니다.</p>
+      <p class="status">상태: 질문 설명 기록 — 사용자 소스 수정 및 예제 실행은 하지 않음.</p>
     </section>
     <section aria-labelledby="print-formatting">
       <h2 id="print-formatting">질문 보충 — 출력 형식 지정</h2>
