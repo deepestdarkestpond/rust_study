@@ -701,7 +701,7 @@ vec![10, 20, 30];      // 매크로는 대괄호 형태로도 호출 가능</cod
     </section>
     <section aria-labelledby="step8">
       <h2 id="step8">8단계 — 정수 타입의 범위</h2>
-      <p class="status">상태: 안내 완료 / 사용자 수정 및 cargo check 결과 확인 대기.</p>
+      <p class="status">상태: 사용자 요청으로 실행 생략 — 정수 범위 설명과 예상 진단만 참고 기록으로 남김.</p>
       <p>u32는 부호 없는 32비트 정수이며 C의 uint32_t에 대응한다.
         이번에는 더 작은 u8을 사용해 타입이 담을 수 있는 범위를 확인한다.
         u8은 부호 없는 8비트 정수로 C의 uint8_t에 대응하며 범위는 0부터 255까지다.</p>
@@ -710,7 +710,33 @@ vec![10, 20, 30];      // 매크로는 대괄호 형태로도 호출 가능</cod
       <p>프로젝트 루트에서 cargo check를 직접 실행한다.
         256은 u8의 범위를 벗어나므로 기본 설정에서는 컴파일 오류가 예상된다.
         이번 실습은 실행 중 덧셈 오버플로가 아니라 초기값 리터럴의 범위 검사다.
-        실제 결과는 아직 확인하지 않았으며 확인 후 정상 소스로 복구한다.</p>
+        사용자 요청으로 이 실습은 실행하지 않고 넘어간다. 위 소스 변경과 명령은 참고 절차이며,
+        실제 실행 결과나 완료 확인을 뜻하지 않는다. 현재 확인한 소스는 u8과 초기값 0을 사용한다.</p>
+    </section>
+    <section aria-labelledby="step9">
+      <h2 id="step9">9단계 — 함수의 입력과 반환값</h2>
+      <p class="status">상태: 안내 완료 / 사용자 코드 작성 및 cargo run 결과 확인 대기.</p>
+      <p>현재의 값 증가 연산을 별도 함수로 옮겨 함수 선언, 매개변수와 반환값을 익힌다.
+        아래 코드는 사용자가 직접 작성할 실습 예제다.</p>
+      <pre><code>use std::println as print_line;
+
+fn increment(value: u8) -&gt; u8 {
+    value + 1
+}
+
+fn main() {
+    let mut count: u8 = 0;
+    count = increment(count);
+    print_line!("Count: {count}");
+}</code></pre>
+      <p>fn은 함수를 선언한다. value: u8은 입력 매개변수이며 -&gt; u8은 반환값의 타입이다.
+        함수 본문의 마지막 표현식 value + 1 뒤에는 세미콜론이 없다.
+        이 표현식의 값을 함수의 반환값으로 사용하기 때문이다.
+        C의 uint8_t increment(uint8_t value) { return value + 1; }에 대응한다.</p>
+      <p>이 예제의 u8 값은 함수에 복사되어 전달된다. increment는 호출한 쪽의 count를 직접 변경하지 않으며,
+        계산 결과를 반환한다. main에서 count = increment(count);로 결과를 다시 대입한다.</p>
+      <p>저장 후 프로젝트 루트에서 cargo run을 직접 실행한다. 예상 출력은 Count: 1이다.
+        실제 실행 결과는 아직 확인하지 않았다.</p>
     </section>
   </main>
 </body>
