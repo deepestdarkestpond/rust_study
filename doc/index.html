@@ -960,6 +960,28 @@ while count &lt; 15 &amp;&amp; ready {
         &amp;&amp;는 논리 AND이고 !ready는 논리 부정이며, break는 가장 가까운 반복문을 빠져나간다.</p>
       <p class="status">상태: 사용자 요청으로 설명만 기록 — 소스 수정 및 실행 실습은 진행하지 않음.</p>
     </section>
+    <section aria-labelledby="for-or-while">
+      <h2 id="for-or-while">질문 보충 — Rust에서는 while을 더 많이 쓰는가?</h2>
+      <p>C의 for에서 복잡한 조건식과 갱신식을 사용했다면 Rust에서는 while로 옮기는 경우가 있다.
+        다만 이것만으로 Rust에서 while의 사용 빈도가 더 높다고 판단할 수는 없다.
+        Rust의 for는 범위나 배열의 값을 직접 순회할 수 있다.</p>
+      <pre><code>// 정해진 횟수만큼 반복
+for count in 0..10 {
+    // 작업
+}
+
+// 배열의 값을 순서대로 처리 (values는 앞서 정의한 배열)
+for value in values {
+    // 작업
+}
+
+// 상태 조건이 유지되는 동안 반복 (ready는 bool)
+while ready {
+    // 작업
+}</code></pre>
+      <p>값들을 순서대로 처리할 때는 for, 상태 조건에 따라 반복할 때는 while을 선택하는 기준으로 이해한다.
+        위 코드는 개념 설명용이며 실행 결과를 확인한 실습은 아니다.</p>
+    </section>
   </main>
 </body>
 </html>
