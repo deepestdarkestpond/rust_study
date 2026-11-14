@@ -879,6 +879,35 @@ Count: 15, Status: active</code></pre>
         조건을 만족할 때마다 실행하므로 10 초과 메시지는 11부터 15까지 매번 출력된다.
         status를 계산하는 시점에는 count가 항상 양수이므로 모두 active가 된다.</p>
     </section>
+    <section aria-labelledby="step12">
+      <h2 id="step12">12단계 — for와 정수 범위</h2>
+      <p class="status">상태: 안내 완료 / 사용자 코드 작성 및 실행 결과 확인 대기.</p>
+      <p>Rust의 for는 범위 등의 항목을 순서대로 꺼내며 반복한다.
+        C의 for (int count = 1; count &lt;= 15; count++)에 해당하는 반복을 다음처럼 작성할 수 있다.</p>
+      <pre><code>use std::println as print_line;
+
+fn main() {
+    for count in 1u8..=15 {
+        if count % 3 == 0 {
+            print_line!("Count is a multiple of 3: {}", count);
+        }
+        if count &gt; 10 {
+            print_line!("Count exceeded 10!");
+        }
+
+        let status = if count &gt; 0 { "active" } else { "idle" };
+        print_line!("Count: {}, Status: {}", count, status);
+    }
+}</code></pre>
+      <p>1u8은 u8 타입의 값 1이다. 여기서는 이전 실습의 count 타입을 유지하도록 명시했다.
+        1u8..=15는 1부터 15까지 끝값을 포함한다. 1u8..15는 1부터 14까지로 끝값을 제외한다.</p>
+      <p>기존의 let mut count: u8 = 0;과 count += 1;은 제거한다.
+        for가 각 반복의 count를 새로 바인딩하므로 직접 증가시키거나 mut을 붙일 필요가 없다.
+        count는 for 본문에서 사용할 수 있으며 반복문 뒤에서는 이 바인딩을 사용할 수 없다.</p>
+      <p>사용자가 직접 수정하고 cargo run으로 확인한다. 예상 동작은 앞선 while 실습과 같으며,
+        Count는 1부터 15까지 출력된다. 3의 배수 메시지와 10 초과 메시지도 동일한 값에서 출력된다.
+        실제 실행 결과는 아직 확인하지 않았다.</p>
+    </section>
   </main>
 </body>
 </html>
