@@ -738,6 +738,35 @@ fn main() {
       <p>저장 후 프로젝트 루트에서 cargo run을 직접 실행한다. 예상 출력은 Count: 1이다.
         실제 실행 결과는 아직 확인하지 않았다.</p>
     </section>
+    <section aria-labelledby="step10">
+      <h2 id="step10">10단계 — if로 값을 선택하기</h2>
+      <p class="status">상태: 안내 완료 / 사용자 코드 작성 및 실행 결과 확인 대기.</p>
+      <p>사용자의 다음 학습 요청에 따라 if 표현식 설명으로 진행한다.
+        현재 소스에는 increment 함수가 없어 9단계 작성 및 실행은 확인하지 않았다.</p>
+      <p>Rust의 if는 조건에 따라 실행할 코드를 나눌 뿐 아니라 값을 만들 수도 있다.
+        C의 count &gt; 0 ? "active" : "idle"과 비교할 수 있다.</p>
+      <pre><code>use std::println as print_line;
+
+fn main() {
+    let mut count: u8 = 0;
+    count += 1;
+
+    let status = if count &gt; 0 {
+        "active"
+    } else {
+        "idle"
+    };
+
+    print_line!("Count: {count}, status: {status}");
+}</code></pre>
+      <p>조건을 감싸는 괄호는 필요하지 않으며 각 분기의 중괄호는 필요하다.
+        각 분기의 마지막 문자열 뒤에 세미콜론을 붙이지 않아 그 값을 분기의 결과로 사용한다.
+        마지막 };의 세미콜론은 let 선언을 끝낸다.
+        값을 선택해 대입하는 이 형태에서는 else가 필요하고 양쪽 분기의 결과 타입이 맞아야 한다.</p>
+      <p>사용자가 저장 후 cargo run을 실행한다. 예상 출력은 Count: 1, status: active다.
+        비교를 위해 count += 1;을 주석 처리하면 예상 출력은 Count: 0, status: idle이다.
+        이 경우 mut이 불필요하다는 경고가 나올 수 있다. 두 경우 모두 아직 실제 실행 결과는 확인하지 않았다.</p>
+    </section>
   </main>
 </body>
 </html>
