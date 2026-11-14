@@ -937,6 +937,29 @@ for count in (1u8..=15).step_by(2) {
         가변적인 증가 규칙이 필요하면 while에서 직접 값을 갱신하는 방법을 사용할 수 있다.</p>
       <p>설명용 예제이며 사용자 소스는 수정하지 않았다. 실제 실행 결과도 아직 확인하지 않았다.</p>
     </section>
+    <section aria-labelledby="for-custom-condition">
+      <h2 id="for-custom-condition">질문 보충 — for에 별도 조건식 넣기</h2>
+      <p>Rust에는 C의 for (초기화; 조건; 갱신) 형태가 없다.
+        C에서 다음처럼 작성하는 반복은 Rust에서 while로 표현할 수 있다.</p>
+      <pre><code>// C: for (int count = 1; count &lt; 15 &amp;&amp; ready; count += 2)
+let mut count = 1;
+
+while count &lt; 15 &amp;&amp; ready {
+    // 작업
+    count += 2;
+}</code></pre>
+      <p>또는 for 본문에서 조건을 검사하고 break로 반복을 종료할 수 있다.</p>
+      <pre><code>for count in (1u8..15).step_by(2) {
+    if !ready {
+        break;
+    }
+
+    print_line!("Count: {count}");
+}</code></pre>
+      <p>위 예제의 ready는 앞에서 선언된 bool 변수라고 가정한다.
+        &amp;&amp;는 논리 AND이고 !ready는 논리 부정이며, break는 가장 가까운 반복문을 빠져나간다.</p>
+      <p class="status">상태: 사용자 요청으로 설명만 기록 — 소스 수정 및 실행 실습은 진행하지 않음.</p>
+    </section>
   </main>
 </body>
 </html>
