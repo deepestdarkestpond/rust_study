@@ -1126,6 +1126,29 @@ fn main() {
         같은 주변장치를 여러 소유자가 중복으로 다루는 것을 제한하는 데 활용할 수 있다.</p>
       <p class="status">상태: 질문 설명 기록 — 사용자 소스 수정 및 예제 실행은 하지 않음.</p>
     </section>
+    <section aria-labelledby="mut-versus-move">
+      <h2 id="mut-versus-move">질문 보충 — mut이 이동 속성인가?</h2>
+      <p>mut은 변경 가능성을 나타내며 이동 여부를 지정하는 속성이 아니다.
+        값으로 대입할 때 Copy 타입은 복사되고, Copy가 아닌 타입은 이동한다.</p>
+      <pre><code>let mut a: u8 = 10;
+let b = a; // u8이므로 복사. mut이어도 a를 계속 사용할 수 있음
+a = 20;
+println!("a: {a}, b: {b}"); // a: 20, b: 10
+
+let a = String::from("hello"); // mut 없음
+let b = a; // String은 Copy가 아니므로 이동</code></pre>
+      <p>let mut p는 바인딩 p의 값을 바꿀 수 있다는 뜻이다.
+        &amp;mut T는 참조를 통해 대상을 변경할 수 있다는 뜻이다. 두 위치의 mut을 구분한다.</p>
+      <pre><code>let mut value = 10u32;
+let p: &amp;mut u32 = &amp;mut value;
+let q = p;
+*q = 20;</code></pre>
+      <p>이 예제에서 p가 q로 이동하는 이유는 &amp;mut u32가 Copy가 아니기 때문이다.
+        가변 참조를 자유롭게 복사해서 같은 대상을 동시에 독점적으로 접근할 수 없도록 설계되어 있다.
+        q 바인딩 자체에는 mut이 없어도 q를 통해 가리키는 값을 변경할 수 있다.
+        한편 원시 포인터 *mut u32는 이름에 mut이 있어도 Copy이므로 대입하면 주소가 복사된다.</p>
+      <p class="status">상태: 질문 설명과 예상 출력 기록 — 이번 보충 예제는 실행하지 않았으며 사용자 소스는 수정하지 않음.</p>
+    </section>
     <section aria-labelledby="ownership-and-heap">
       <h2 id="ownership-and-heap">질문 보충 — 힙과 소유권 이동은 어떤 관계인가?</h2>
       <p>힙 사용 여부가 이동과 복사를 결정하는 것은 아니다. 대입하는 타입이 Copy이면 복사되고,
