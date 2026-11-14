@@ -1093,6 +1093,39 @@ print_line!("{b}"); // 가능
         모든 배열이 복사되는 것은 아니며 원소 타입에 따라 달라진다.</p>
       <p class="status">상태: 질문 설명 기록 — 사용자 소스 수정 및 예제 실행은 하지 않음.</p>
     </section>
+    <section aria-labelledby="ownership-types">
+      <h2 id="ownership-types">질문 보충 — String만 소유권이 이동하는가?</h2>
+      <p>소유권은 String에만 적용되는 개념이 아니다. Copy 타입은 대입 시 복사되고,
+        Copy가 아닌 타입은 값을 대입하거나 값으로 함수에 전달할 때 이동한다.
+        String은 이를 보여주기 위한 예제다.</p>
+      <table>
+        <thead><tr><th>타입 예시</th><th>다른 변수에 값으로 대입할 때</th></tr></thead>
+        <tbody>
+          <tr><td>u8, u32, bool</td><td>복사</td></tr>
+          <tr><td>[u8; 4]</td><td>원소가 Copy이므로 배열 전체도 복사</td></tr>
+          <tr><td>String, Vec&lt;u8&gt;, Box&lt;u8&gt;</td><td>이동</td></tr>
+          <tr><td>Copy를 구현하지 않은 사용자 정의 struct</td><td>이동</td></tr>
+        </tbody>
+      </table>
+      <p>힙 메모리를 사용하지 않아도 이동할 수 있다. 다음 struct는 문법을 미리 보여주는 설명용 예제다.</p>
+      <pre><code>struct Sample {
+    value: u8,
+}
+
+fn main() {
+    let a = Sample { value: 42 };
+    let b = a; // Sample은 Copy가 아니므로 이동
+
+    println!("{}", b.value);
+    // let c = a; // 오류: 이동한 a를 다시 사용할 수 없음
+}</code></pre>
+      <p>필드가 u8이어도 struct 자체가 자동으로 Copy가 되지는 않는다.
+        조건을 만족하는 struct에 Copy를 구현하는 방법은 해당 과정에서 다룬다.
+        Copy도 소유권 규칙 안에서 동작하며, 복사한 값은 각각 사용할 수 있다.</p>
+      <p>향후 HAL에서도 주변장치 핸들을 Copy 없이 설계해 이동시키면,
+        같은 주변장치를 여러 소유자가 중복으로 다루는 것을 제한하는 데 활용할 수 있다.</p>
+      <p class="status">상태: 질문 설명 기록 — 사용자 소스 수정 및 예제 실행은 하지 않음.</p>
+    </section>
     <section aria-labelledby="ownership-clone">
       <h2 id="ownership-clone">질문 보충 — 이동 대신 실제로 복사하려면?</h2>
       <p>String처럼 대입 시 이동하는 값을 별도의 소유 값으로 복제하려면 clone()을 사용한다.</p>
